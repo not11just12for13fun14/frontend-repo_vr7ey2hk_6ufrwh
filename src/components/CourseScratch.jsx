@@ -1,17 +1,25 @@
 import { motion } from 'framer-motion'
-import { ArrowLeft, Clock, Star, Users, Sparkles, Play } from 'lucide-react'
+import { ArrowLeft, Clock, Star, Users, Sparkles, Play, Palette, Video } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
-const Block = ({ color, children, className = '' }) => (
+const mascotUrl = 'https://upload.wikimedia.org/wikipedia/commons/3/3a/Scratchcat.png'
+const blocksData = [
+  { color: '#FDE68A', text: <>Переместить <span className="ml-2 inline-block rounded-md bg-white/70 px-2 py-0.5 text-xs">10 шагов</span></> },
+  { color: '#93C5FD', text: <>Повернуть <span className="ml-2 inline-block rounded-md bg-white/70 px-2 py-0.5 text-xs">15°</span></> },
+  { color: '#A7F3D0', text: <>Когда <span className="ml-2 inline-block rounded-md bg-white/70 px-2 py-0.5 text-xs">клик по флагу</span></> },
+  { color: '#FCA5A5', text: <>Издать <span className="ml-2 inline-block rounded-md bg-white/70 px-2 py-0.5 text-xs">звук</span></> },
+  { color: '#DDD6FE', text: <>Повторить <span className="ml-2 inline-block rounded-md bg-white/70 px-2 py-0.5 text-xs">10 раз</span></> },
+  { color: '#FDBA74', text: <>Сказать <span className="ml-2 inline-block rounded-md bg-white/70 px-2 py-0.5 text-xs">привет!</span></> },
+]
+
+const Block = ({ color, children, delay = 0, className = '' }) => (
   <motion.div
-    initial={{ y: 20, opacity: 0 }}
-    animate={{ y: 0, opacity: 1 }}
-    transition={{ type: 'spring', stiffness: 120, damping: 12 }}
+    initial={{ y: 24, opacity: 0, rotate: -2 }}
+    animate={{ y: 0, opacity: 1, rotate: 0 }}
+    transition={{ type: 'spring', stiffness: 120, damping: 12, delay }}
+    whileHover={{ scale: 1.03, rotate: 1 }}
     className={`rounded-2xl px-4 py-3 shadow-[0_8px_20px_rgba(0,0,0,0.25)] border ${className}`}
-    style={{
-      background: color,
-      borderColor: 'rgba(255,255,255,0.08)'
-    }}
+    style={{ background: color, borderColor: 'rgba(0,0,0,0.08)' }}
   >
     <div className="flex items-center gap-2 text-slate-900 font-semibold drop-shadow-[0_1px_0_rgba(255,255,255,0.5)]">
       {children}
@@ -59,10 +67,24 @@ function CatSVG({ className = '' }){
   )
 }
 
+const float = {
+  animate: {
+    y: [0, -8, 0],
+    transition: { duration: 4, repeat: Infinity }
+  }
+}
+
 export default function CourseScratch(){
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
-      <div className="fixed inset-0 -z-10 bg-[radial-gradient(900px_300px_at_15%_-5%,rgba(250,204,21,0.18),transparent),radial-gradient(700px_260px_at_85%_10%,rgba(245,158,11,0.16),transparent)]" />
+      {/* Multicolor ambient background */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute inset-0 opacity-70 mix-blend-screen pointer-events-none">
+          <div className="absolute -top-10 -left-10 w-[42vw] h-[42vw] bg-[radial-gradient(circle_at_center,rgba(250,204,21,0.16),transparent_60%)]" />
+          <div className="absolute -right-16 -top-6 w-[38vw] h-[38vw] bg-[radial-gradient(circle_at_center,rgba(56,189,248,0.18),transparent_60%)]" />
+          <div className="absolute bottom-0 left-1/3 w-[36vw] h-[36vw] bg-[radial-gradient(circle_at_center,rgba(167,139,250,0.18),transparent_60%)]" />
+        </div>
+      </div>
 
       <div className="mx-auto max-w-7xl px-4 py-8">
         <Link to="/" className="inline-flex items-center gap-2 text-slate-300 hover:text-white">
@@ -93,9 +115,12 @@ export default function CourseScratch(){
             </div>
 
             <div className="mt-7 flex flex-wrap gap-3">
-              <Link to="#program" className="px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-300 to-orange-400 text-slate-900 font-semibold hover:opacity-90">
+              <a href="#program" className="px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-300 via-rose-300 to-orange-400 text-slate-900 font-semibold hover:opacity-90">
                 Смотреть программу
-              </Link>
+              </a>
+              <a href="#video" className="px-5 py-3 rounded-2xl border border-cyan-300/40 text-cyan-200 hover:bg-cyan-400/10 inline-flex items-center gap-2">
+                <Video className="w-4 h-4" /> Мини‑видео
+              </a>
               <a href="#signup" className="px-5 py-3 rounded-2xl border border-amber-300/40 text-amber-200 hover:bg-amber-400/10">
                 Записаться на пробный урок
               </a>
@@ -109,17 +134,40 @@ export default function CourseScratch(){
               transition={{ duration: 0.6 }}
               className="relative rounded-3xl border border-slate-800 bg-slate-900/60 p-6 overflow-hidden"
             >
-              <div className="absolute -right-12 -top-12 w-64 h-64 rounded-full bg-gradient-to-br from-amber-300 to-orange-500 opacity-20 blur-2xl" />
+              {/* Ambient blobs */}
+              <motion.div {...float} className="absolute -right-12 -top-12 w-64 h-64 rounded-full bg-gradient-to-br from-amber-300 to-orange-500 opacity-20 blur-2xl" />
+              <motion.div animate={{ y: [0, 10, 0] }} transition={{ duration: 5, repeat: Infinity }} className="absolute -left-10 bottom-10 w-52 h-52 rounded-full bg-gradient-to-tr from-cyan-300/40 to-sky-400/40 blur-2xl" />
 
-              <div className="grid grid-cols-2 gap-4">
-                <Block color="#FDE68A" className="text-slate-900">Переместить <span className="ml-2 inline-block rounded-md bg-white/70 px-2 py-0.5 text-xs">10 шагов</span></Block>
-                <Block color="#FCA5A5" className="text-slate-900">Издать <span className="ml-2 inline-block rounded-md bg-white/70 px-2 py-0.5 text-xs">звук</span></Block>
-                <Block color="#93C5FD" className="text-slate-900">Повернуть <span className="ml-2 inline-block rounded-md bg-white/70 px-2 py-0.5 text-xs">15°</span></Block>
-                <Block color="#A7F3D0" className="text-slate-900">Когда <span className="ml-2 inline-block rounded-md bg-white/70 px-2 py-0.5 text-xs">клик по флагу</span></Block>
+              <div className="grid sm:grid-cols-2 gap-4">
+                {blocksData.map((b, i) => (
+                  <Block key={i} color={b.color} delay={i * 0.08} className="text-slate-900">
+                    {b.text}
+                  </Block>
+                ))}
               </div>
 
-              <div className="mt-6 flex items-center justify-center">
-                <CatSVG className="w-[320px] h-[260px]" />
+              <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+                <div className="flex items-center justify-center">
+                  <CatSVG className="w-[280px] h-[220px]" />
+                </div>
+                <motion.div
+                  initial={{ y: 20, opacity: 0 }}
+                  whileInView={{ y: 0, opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6 }}
+                  className="relative"
+                >
+                  <img src={mascotUrl} alt="Scratch mascot" className="w-full max-w-[260px] mx-auto drop-shadow-[0_12px_30px_rgba(251,191,36,0.45)]" />
+                  <motion.span
+                    className="absolute -z-10 inset-0 rounded-[28px]"
+                    animate={{ boxShadow: [
+                      '0 0 0 0 rgba(251,191,36,0.35)',
+                      '0 0 0 12px rgba(99,102,241,0.18)',
+                      '0 0 0 0 rgba(251,191,36,0.35)'
+                    ] }}
+                    transition={{ duration: 3.2, repeat: Infinity }}
+                  />
+                </motion.div>
               </div>
             </motion.div>
             <motion.div
@@ -127,6 +175,24 @@ export default function CourseScratch(){
               animate={{ y: [0, -8, 0] }}
               transition={{ duration: 4, repeat: Infinity }}
             />
+          </div>
+        </section>
+
+        <section id="video" className="mt-14">
+          <div className="flex items-center gap-2 text-cyan-200 text-sm mb-3">
+            <Palette className="w-4 h-4" /> Больше цвета и движения
+          </div>
+          <div className="rounded-3xl border border-cyan-300/30 bg-gradient-to-r from-cyan-300/10 via-fuchsia-300/10 to-violet-400/10 p-4 md:p-6">
+            <div className="aspect-video w-full overflow-hidden rounded-2xl border border-cyan-300/20">
+              <iframe
+                className="w-full h-full"
+                src="https://www.youtube.com/embed/VIpmkeqJhmQ?rel=0&modestbranding=1"
+                title="Scratch mini intro"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              />
+            </div>
+            <p className="text-slate-300 text-sm mt-3">Короткое видео о том, как в Scratch собирают блоки и создают анимации. Дальше — практика на каждом занятии.</p>
           </div>
         </section>
 
@@ -147,25 +213,36 @@ export default function CourseScratch(){
               'Финальный проект: аркадная игра',
               'Презентация проекта родителям'
             ].map((item, i) => (
-              <div key={i} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 flex items-start gap-3">
-                <div className="mt-1 w-2.5 h-2.5 rounded-full bg-amber-400" />
+              <motion.div
+                key={i}
+                initial={{ y: 16, opacity: 0 }}
+                whileInView={{ y: 0, opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.04 }}
+                className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 flex items-start gap-3"
+              >
+                <motion.div
+                  className="mt-1 w-2.5 h-2.5 rounded-full bg-gradient-to-r from-amber-400 via-cyan-400 to-fuchsia-400"
+                  animate={{ scale: [1, 1.3, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
                 <div>
                   <div className="text-slate-100 font-medium">{i+1}. {item}</div>
                   <div className="text-slate-400 text-sm">Практика на каждом занятии — маленький проект своими руками.</div>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </section>
 
         <section id="signup" className="mt-14">
-          <div className="rounded-3xl border border-amber-300/30 bg-gradient-to-r from-amber-300/10 to-orange-400/10 p-6 md:p-8">
+          <div className="rounded-3xl border border-amber-300/30 bg-gradient-to-r from-amber-300/10 via-pink-300/10 to-orange-400/10 p-6 md:p-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
               <div>
                 <h3 className="text-xl font-bold text-amber-200">Готовы попробовать?</h3>
                 <p className="text-slate-300 mt-1">Оставьте заявку — пришлём расписание ближайших пробных занятий.</p>
               </div>
-              <button className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-300 to-orange-400 text-slate-900 font-semibold hover:opacity-90">
+              <button className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-300 via-rose-300 to-orange-400 text-slate-900 font-semibold hover:opacity-90">
                 <Play className="w-4 h-4" /> Записаться на пробный урок
               </button>
             </div>
