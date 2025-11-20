@@ -1,8 +1,21 @@
+import { useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Clock, Star, Users, Sparkles, Play, Palette, Video } from 'lucide-react'
+import { ArrowLeft, Clock, Star, Users, Sparkles, Play, Palette, Video, PartyPopper } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 const mascotUrl = 'https://upload.wikimedia.org/wikipedia/commons/3/3a/Scratchcat.png'
+
+const scratchColors = [
+  '#FDE68A', // amber-200
+  '#93C5FD', // blue-300
+  '#A7F3D0', // emerald-200
+  '#FCA5A5', // rose-300
+  '#DDD6FE', // violet-200
+  '#FDBA74', // orange-300
+  '#67E8F9', // cyan-300
+  '#F0ABFC'  // fuchsia-300
+]
+
 const blocksData = [
   { color: '#FDE68A', text: <>Переместить <span className="ml-2 inline-block rounded-md bg-white/70 px-2 py-0.5 text-xs">10 шагов</span></> },
   { color: '#93C5FD', text: <>Повернуть <span className="ml-2 inline-block rounded-md bg-white/70 px-2 py-0.5 text-xs">15°</span></> },
@@ -12,14 +25,18 @@ const blocksData = [
   { color: '#FDBA74', text: <>Сказать <span className="ml-2 inline-block rounded-md bg-white/70 px-2 py-0.5 text-xs">привет!</span></> },
 ]
 
-const Block = ({ color, children, delay = 0, className = '' }) => (
+const Block = ({ color, children, delay = 0, className = '', dragConstraints }) => (
   <motion.div
+    drag
+    dragElastic={0.25}
+    dragConstraints={dragConstraints}
+    whileTap={{ scale: 0.98 }}
+    whileHover={{ scale: 1.04, rotate: 1 }}
     initial={{ y: 24, opacity: 0, rotate: -2 }}
     animate={{ y: 0, opacity: 1, rotate: 0 }}
     transition={{ type: 'spring', stiffness: 120, damping: 12, delay }}
-    whileHover={{ scale: 1.03, rotate: 1 }}
     className={`rounded-2xl px-4 py-3 shadow-[0_8px_20px_rgba(0,0,0,0.25)] border ${className}`}
-    style={{ background: color, borderColor: 'rgba(0,0,0,0.08)' }}
+    style={{ background: color, borderColor: 'rgba(0,0,0,0.08)', cursor: 'grab' }}
   >
     <div className="flex items-center gap-2 text-slate-900 font-semibold drop-shadow-[0_1px_0_rgba(255,255,255,0.5)]">
       {children}
@@ -67,6 +84,67 @@ function CatSVG({ className = '' }){
   )
 }
 
+function ParticleField(){
+  const count = 50
+  const particles = useMemo(() => Array.from({ length: count }, (_, i) => {
+    const size = Math.random() * 4 + 2
+    const color = scratchColors[Math.floor(Math.random() * scratchColors.length)]
+    const x = Math.random() * 100
+    const y = Math.random() * 100
+    const dx = (Math.random() - 0.5) * 30
+    const dy = (Math.random() - 0.5) * 30
+    const delay = Math.random() * 2
+    const duration = 4 + Math.random() * 4
+    return { id: i, size, color, x, y, dx, dy, delay, duration }
+  }), [])
+
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden">
+      {particles.map(p => (
+        <motion.span
+          key={p.id}
+          className="absolute rounded-full" 
+          style={{ width: p.size, height: p.size, left: `${p.x}%`, top: `${p.y}%`, background: p.color, filter: 'blur(0.2px)' }}
+          animate={{ x: [0, p.dx, 0], y: [0, p.dy, 0], opacity: [0.2, 0.7, 0.2] }}
+          transition={{ duration: p.duration, repeat: Infinity, delay: p.delay }}
+        />
+      ))}
+    </div>
+  )
+}
+
+function ConfettiBurst({ burstKey = 0 }){
+  const pieces = useMemo(() => {
+    const N = 70
+    return Array.from({ length: N }, (_, i) => {
+      const angle = (i / N) * Math.PI * 2 + Math.random() * 0.4
+      const dist = 80 + Math.random() * 140
+      const x = Math.cos(angle) * dist
+      const y = Math.sin(angle) * dist
+      const color = scratchColors[Math.floor(Math.random() * scratchColors.length)]
+      const size = 6 + Math.random() * 8
+      const rotate = (Math.random() - 0.5) * 120
+      const duration = 0.9 + Math.random() * 0.6
+      return { id: `${burstKey}-${i}`, x, y, color, size, rotate, duration }
+    })
+  }, [burstKey])
+
+  return (
+    <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+      {pieces.map(p => (
+        <motion.span
+          key={p.id}
+          className="inline-block rounded-sm shadow"
+          style={{ width: p.size, height: p.size, background: p.color }}
+          initial={{ opacity: 1, scale: 0, rotate: 0 }}
+          animate={{ opacity: [1, 1, 0], scale: [0.6, 1, 1], x: p.x, y: p.y, rotate: p.rotate }}
+          transition={{ duration: p.duration, ease: 'easeOut' }}
+        />
+      ))}
+    </div>
+  )
+}
+
 const float = {
   animate: {
     y: [0, -8, 0],
@@ -75,15 +153,19 @@ const float = {
 }
 
 export default function CourseScratch(){
+  const constraintsRef = useRef(null)
+  const [burstKey, setBurstKey] = useState(0)
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
-      {/* Multicolor ambient background */}
+      {/* Multicolor ambient background with subtle motion */}
       <div className="fixed inset-0 -z-10">
-        <div className="absolute inset-0 opacity-70 mix-blend-screen pointer-events-none">
-          <div className="absolute -top-10 -left-10 w-[42vw] h-[42vw] bg-[radial-gradient(circle_at_center,rgba(250,204,21,0.16),transparent_60%)]" />
-          <div className="absolute -right-16 -top-6 w-[38vw] h-[38vw] bg-[radial-gradient(circle_at_center,rgba(56,189,248,0.18),transparent_60%)]" />
-          <div className="absolute bottom-0 left-1/3 w-[36vw] h-[36vw] bg-[radial-gradient(circle_at_center,rgba(167,139,250,0.18),transparent_60%)]" />
+        <div className="absolute inset-0 opacity-80 mix-blend-screen pointer-events-none">
+          <motion.div animate={{ x: [0, 10, 0] }} transition={{ duration: 12, repeat: Infinity }} className="absolute -top-10 -left-10 w-[42vw] h-[42vw] bg-[radial-gradient(circle_at_center,rgba(250,204,21,0.16),transparent_60%)]" />
+          <motion.div animate={{ y: [0, -12, 0] }} transition={{ duration: 16, repeat: Infinity }} className="absolute -right-16 -top-6 w-[38vw] h-[38vw] bg-[radial-gradient(circle_at_center,rgba(56,189,248,0.18),transparent_60%)]" />
+          <motion.div animate={{ x: [0, -8, 0] }} transition={{ duration: 14, repeat: Infinity }} className="absolute bottom-0 left-1/3 w-[36vw] h-[36vw] bg-[radial-gradient(circle_at_center,rgba(167,139,250,0.18),transparent_60%)]" />
         </div>
+        <ParticleField />
       </div>
 
       <div className="mx-auto max-w-7xl px-4 py-8">
@@ -121,6 +203,9 @@ export default function CourseScratch(){
               <a href="#video" className="px-5 py-3 rounded-2xl border border-cyan-300/40 text-cyan-200 hover:bg-cyan-400/10 inline-flex items-center gap-2">
                 <Video className="w-4 h-4" /> Мини‑видео
               </a>
+              <button onClick={() => setBurstKey(k => k + 1)} className="px-5 py-3 rounded-2xl bg-gradient-to-r from-violet-300 to-cyan-300 text-slate-900 font-semibold hover:opacity-90 inline-flex items-center gap-2">
+                <PartyPopper className="w-4 h-4" /> Конфетти!
+              </button>
               <a href="#signup" className="px-5 py-3 rounded-2xl border border-amber-300/40 text-amber-200 hover:bg-amber-400/10">
                 Записаться на пробный урок
               </a>
@@ -129,6 +214,7 @@ export default function CourseScratch(){
 
           <div className="relative">
             <motion.div
+              ref={constraintsRef}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6 }}
@@ -140,7 +226,7 @@ export default function CourseScratch(){
 
               <div className="grid sm:grid-cols-2 gap-4">
                 {blocksData.map((b, i) => (
-                  <Block key={i} color={b.color} delay={i * 0.08} className="text-slate-900">
+                  <Block key={i} color={b.color} delay={i * 0.08} className="text-slate-900" dragConstraints={constraintsRef}>
                     {b.text}
                   </Block>
                 ))}
@@ -163,13 +249,15 @@ export default function CourseScratch(){
                     animate={{ boxShadow: [
                       '0 0 0 0 rgba(251,191,36,0.35)',
                       '0 0 0 12px rgba(99,102,241,0.18)',
-                      '0 0 0 0 rgba(251,191,36,0.35)'
+                      '0 0 0 0 rgba(56,189,248,0.35)'
                     ] }}
                     transition={{ duration: 3.2, repeat: Infinity }}
                   />
                 </motion.div>
               </div>
+              <ConfettiBurst burstKey={burstKey} />
             </motion.div>
+
             <motion.div
               className="absolute -z-10 -bottom-6 -left-6 w-40 h-40 rounded-3xl bg-gradient-to-br from-amber-300/30 to-orange-400/30 blur-xl"
               animate={{ y: [0, -8, 0] }}
