@@ -1,8 +1,9 @@
+import { Link } from 'react-router-dom'
 import { Code, Gamepad2, Shapes, Globe, Box, Cpu, Terminal, Binary, CircuitBoard, Atom, Compass, Layers } from 'lucide-react'
 
 const courses = [
   { title: 'Логика и алгоритмы', age: '7–9', level: 'Начальный', icon: Compass, color: 'from-cyan-400 to-emerald-400' },
-  { title: 'Scratch: первые проекты', age: '7–10', level: 'Начальный', icon: Shapes, color: 'from-violet-400 to-fuchsia-400' },
+  { title: 'Scratch: первые проекты', age: '7–10', level: 'Начальный', icon: Shapes, color: 'from-violet-400 to-fuchsia-400', link: '/course/scratch' },
   { title: 'Roblox Studio', age: '9–12', level: 'Начальный', icon: Gamepad2, color: 'from-emerald-400 to-cyan-400' },
   { title: 'Python Junior', age: '10–13', level: 'Средний', icon: PythonIcon, color: 'from-cyan-400 to-violet-400' },
   { title: 'Веб-разработка: HTML & CSS', age: '10–14', level: 'Начальный', icon: Globe, color: 'from-fuchsia-400 to-pink-400' },
@@ -60,7 +61,11 @@ export default function Courses(){
                 Практика в каждом занятии, мини‑проекты и игровая подача материала.
               </div>
               <div className="mt-4 flex items-center justify-between">
-                <button className="text-cyan-300 hover:text-cyan-200 text-sm">Подробнее</button>
+                {c.link ? (
+                  <Link to={c.link} className="text-cyan-300 hover:text-cyan-200 text-sm">Подробнее</Link>
+                ) : (
+                  <button className="text-cyan-300 hover:text-cyan-200 text-sm">Подробнее</button>
+                )}
                 <button className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-400 to-violet-500 text-slate-900 text-sm font-semibold hover:opacity-90">Записаться</button>
               </div>
             </article>
